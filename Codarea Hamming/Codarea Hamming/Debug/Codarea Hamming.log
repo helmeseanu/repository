@@ -1,0 +1,13 @@
+﻿Build started 6/8/2016 9:16:07 AM.
+     1>Project "C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Codarea Hamming\Codarea Hamming.vcxproj" on node 2 (Build target(s)).
+     1>ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /l"0x0409" /nologo /fo"Debug\Codarea Hamming.res" "Codarea Hamming.rc" 
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Debug\Codarea Hamming.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Debug\Codarea Hamming.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Debug\Codarea Hamming.lib" /MACHINE:X86 "Debug\Codarea Hamming.res"
+         Debug\Source.obj
+         Codarea Hamming.vcxproj -> C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Debug\Codarea Hamming.exe
+     1>Done Building Project "C:\Users\George\Desktop\proiect-ramura-proiect\Codarea Hamming\Codarea Hamming\Codarea Hamming.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.72
