@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
 #include "resource.h"
 #include <stdlib.h>
@@ -7,7 +8,6 @@
 #define ID_FILE_EXIT 9001
 #define ID_FILE_DIALOG 9003
 #define ID_FILE_DIALOG1 9004
-#define ID_STUFF_GO 9002
 
 const char g_szClassName[] = "myWindowClass";
 //////////////////////CODARE SIMPLA////////////////////////
@@ -166,12 +166,100 @@ typedef struct caracter
 void transfbin(int val, int *v)
 {
 	int i = 1;
+	for (int j = 1; j <= 8; j++)
+	{
+		v[j] = 0;
+	}
 	while (val)
 	{
 		v[i] = val % 2;
 		val = val / 2;
 		i++;
 	}
+	v[i] = val;
+}
+
+void vectbin_to_stringbin(caracter *v, int poz,char cuv[])
+{
+	int i;
+	for (i = 1; i <= 8; i++)
+	{
+		if (v[poz].vectorbinar[i] == 0) cuv[i-1] = '0';
+		else cuv[i-1] = '1';
+	}
+	cuv[8] = 0;
+}
+
+void vecthamm_to_stringbin(caracter *v, int poz, char cuv[])
+{
+	int i;
+	for (i = 1; i <= 12; i++)
+	{
+		if (v[poz].vectorhamming[i] == 0) cuv[i - 1] = '0';
+		else cuv[i - 1] = '1';
+	}
+	cuv[12] = 0;
+}
+
+void H12_8(caracter *v)
+{
+	int P1, P2, P3, P4;
+	for (int i = 1; i <= 12; i++)
+	{
+		(*v).vectorhamming[i] = 0;
+	}
+	//setare biti din vectorul hamming cu echivalentul lor din vectorul binar;
+	(*v).vectorhamming[3] = (*v).vectorbinar[1];
+	(*v).vectorhamming[5] = (*v).vectorbinar[2];
+	(*v).vectorhamming[6] = (*v).vectorbinar[3];
+	(*v).vectorhamming[7] = (*v).vectorbinar[4];
+	(*v).vectorhamming[9] = (*v).vectorbinar[5];
+	(*v).vectorhamming[10] = (*v).vectorbinar[6];
+	(*v).vectorhamming[11] = (*v).vectorbinar[7];
+	(*v).vectorhamming[12] = (*v).vectorbinar[8];
+	///calcularea bitilor de paritate
+	//1, 3, 5, 7, 9, 11
+	P1 = (*v).vectorhamming[3] + (*v).vectorhamming[5] + (*v).vectorhamming[7] + (*v).vectorhamming[9] + (*v).vectorhamming[11];
+	(*v).vectorhamming[1] = P1%2;
+	//2,3,6,7,10,11
+	P2 = (*v).vectorhamming[3] + (*v).vectorhamming[6] + (*v).vectorhamming[7] + (*v).vectorhamming[10] + (*v).vectorhamming[11];
+	(*v).vectorhamming[2] = P2%2;
+	//4, 5, 6, 7, 12
+	P3 = (*v).vectorhamming[5] + (*v).vectorhamming[6] + (*v).vectorhamming[7] + (*v).vectorhamming[12];
+	(*v).vectorhamming[4] = P3%2;
+	//8,9,10,11,12
+	P4 = (*v).vectorhamming[9] + (*v).vectorhamming[10] + (*v).vectorhamming[11] + (*v).vectorhamming[12];
+	(*v).vectorhamming[8] = P4%2;
+}
+
+void hamm_gen_err(caracter *v)
+{
+	int generr, pozerr;
+	generr = rand() % 2;
+	if (generr == 1)
+	{
+		pozerr = rand() % 12 + 1;
+		if ((*v).vectorhamming[pozerr] == 0) (*v).vectorhamming[pozerr] = 1;
+		else (*v).vectorhamming[pozerr] = 0;
+	}
+}
+
+int pozerr(caracter *v)
+{
+	int pozeronata = 0,P1,P2,P3,P4;
+	P1 = (*v).vectorhamming[1] + (*v).vectorhamming[3] + (*v).vectorhamming[5] + (*v).vectorhamming[7] + (*v).vectorhamming[9] + (*v).vectorhamming[11];
+	P2 = (*v).vectorhamming[2] + (*v).vectorhamming[3] + (*v).vectorhamming[6] + (*v).vectorhamming[7] + (*v).vectorhamming[10] + (*v).vectorhamming[11];
+	P3 = (*v).vectorhamming[4] + (*v).vectorhamming[5] + (*v).vectorhamming[6] + (*v).vectorhamming[7] + (*v).vectorhamming[12];
+	P4 = (*v).vectorhamming[8] + (*v).vectorhamming[9] + (*v).vectorhamming[10] + (*v).vectorhamming[11] + (*v).vectorhamming[12];
+	pozeronata = (P1 % 2) + (P2 % 2) * 2 + (P3 % 2) * 4 + (P4 % 2) * 8;
+	return pozeronata;
+}
+
+char calcchar(caracter v)
+{
+	int ASC;
+	ASC =(v.vectorhamming[3]*1) + (v.vectorhamming[5] * 2 )+ (v.vectorhamming[6] * 4 )+ (v.vectorhamming[7] * 8) + (v.vectorhamming[9] * 16) + (v.vectorhamming[10] * 32) + (v.vectorhamming[11] * 64) + (v.vectorhamming[12]*128);
+	return (char)ASC;
 }
 
 BOOL CALLBACK hamming12_8(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
@@ -192,15 +280,110 @@ BOOL CALLBACK hamming12_8(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 		if (len == 0)MessageBox(hwnd, "Nu ai introdus nimic!", "Atentionare", MB_OK);
 		else
 		{
+			///mesajul initial este salvat intr-un buffer pentru prelucrarile viitoare
 			caracter *vect;
-			char *sir, *sirerori, *sircorectat;
+			char *sir;
 			char *sirbinar;
 			sir = (char*)malloc(len + 1);
+			GetDlgItemText(hwnd, IDC_EDIT1, sir, len + 1);
 			sirbinar = (char*)malloc(9 * len + 1);
 			vect = (caracter*)malloc(len*sizeof(caracter));
-			for (int i = 0; i < len; i++)	transfbin(sir[i], vect[i].vectorbinar);
+			for (int i = 0; i < len; i++) transfbin((int)sir[i], vect[i].vectorbinar);
+		
+			/////este afisat mesajul initial in format binar(fara erori generate)
+			char *sirbin,cc[9];
+			sirbin = (char*)malloc(9 * len);
+			vectbin_to_stringbin(vect, 0, cc);
+			strcpy(sirbin, cc);
+			for (int i = 1; i < len; i++)
+			{
+				vectbin_to_stringbin(vect, i, cc);
+				strcat(sirbin, "_");
+				strcat(sirbin, cc);
+			}
+			sirbin[9 * len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT2, sirbin);
 
+			/////Codarea hamming 12_8
+			for (int i = 0; i < len; i++) H12_8(&vect[i]);
+
+			///afisarea mesajului binar dupa codare
+			char *sirbinhamm, ch[13];
+			sirbinhamm = (char*)malloc(13 * len);
+			vecthamm_to_stringbin(vect, 0, ch);
+			strcpy(sirbinhamm, ch);
+			for (int i = 1; i < len; i++)
+			{
+				vecthamm_to_stringbin(vect, i, ch);
+				strcat(sirbinhamm, "_");
+				strcat(sirbinhamm, ch);
+			}
+			sirbinhamm[13 * len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT3, sirbinhamm);
+
+			///Generare erori pe mesajul binar codificat
+			for (int i = 0; i < len; i++) hamm_gen_err(&vect[i]);
+
+			//Afisare mesaj text cu erori
+			char *mesajtexteronat;
+			mesajtexteronat = (char*)malloc(len + 1);
+			for (int i = 0; i < len; i++)
+			{
+				if (pozerr(&vect[i]) != 0) mesajtexteronat[i] = '#';
+				else mesajtexteronat[i] = calcchar(vect[i]);
+			}
+			mesajtexteronat[len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT5, mesajtexteronat);
+
+			//Afisare mesaj binar cu erori
+			char *mesajbherr, cbh[13];
+			mesajbherr = (char*)malloc(13 * len);
+			vecthamm_to_stringbin(vect, 0, cbh);
+			strcpy(mesajbherr, cbh);
+			for (int i = 1; i < len; i++)
+			{
+				vecthamm_to_stringbin(vect, i, cbh);
+				strcat(mesajbherr, "_");
+				strcat(mesajbherr, cbh);
+			}
+			mesajbherr[13 * len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT6, mesajbherr);
+
+			//Corectie erori
+			for (int i = 0; i < len; i++)
+			{
+				if (pozerr(&vect[i]) != 0)
+				{
+					if (vect[i].vectorhamming[pozerr(&vect[i])] == 0) vect[i].vectorhamming[pozerr(&vect[i])] = 1;
+					else vect[i].vectorhamming[pozerr(&vect[i])] = 0;
+				}
+			}
+
+			//Afisare mesaj text corectat
+			char *mesajtextcorectat;
+			mesajtextcorectat = (char*)malloc(len + 1);
+			for (int i = 0; i < len; i++)
+			{
+				mesajtextcorectat[i] = calcchar(vect[i]);
+			}
+			mesajtextcorectat[len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT7, mesajtextcorectat);
+
+			//Afisare mesaj binar corectat
+			char *mesajbhcor, cbc[13];
+			mesajbhcor = (char*)malloc(13 * len);
+			vecthamm_to_stringbin(vect, 0, cbc);
+			strcpy(mesajbhcor, cbc);
+			for (int i = 1; i < len; i++)
+			{
+				vecthamm_to_stringbin(vect, i, cbc);
+				strcat(mesajbhcor, "_");
+				strcat(mesajbhcor, cbc);
+			}
+			mesajbhcor[13 * len] = 0;
+			SetDlgItemText(hwnd, IDC_EDIT8, mesajbhcor);
 		}
+		
 		break;
 	}
 	}
@@ -224,7 +407,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		switch (LOWORD(wParam))
 		{
 		case ID_FILE_EXIT: DestroyWindow(hwnd); break;
-		case ID_STUFF_GO: MessageBox(hwnd, "Bravo!!", "mesaj", MB_OK); break;
 		case ID_FILE_DIALOG:
 		{
 			int ret = DialogBox(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG1), hwnd, dialogcodaresimpla);
@@ -255,9 +437,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		AppendMenu(hSubMenu, MF_STRING, ID_FILE_DIALOG1, "&Hamming (12,8)");
 		AppendMenu(hSubMenu, MF_STRING, ID_FILE_EXIT, "E&xit");
 		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Codari");
-		hSubMenu = CreatePopupMenu();
-		AppendMenu(hSubMenu, MF_STRING, ID_STUFF_GO, "&Go");
-		AppendMenu(hMenu, MF_STRING | MF_POPUP, (UINT)hSubMenu, "&Stuff");
 		SetMenu(hwnd, hMenu);
 		hIcon = (HICON)LoadImage(NULL, "menu_two.ico", IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
 		if (hIcon) SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
@@ -295,7 +474,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		MessageBox(NULL, "Window Registration Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
 		return 0;
 	}
-	hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, g_szClassName, "Fereastra", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 250, 250, NULL, NULL, hInstance, NULL);
+	hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, g_szClassName, "Hamming", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 200, 150, NULL, NULL, hInstance, NULL);
 	if (hwnd == NULL)
 	{
 		MessageBox(NULL, "Window Creation Failed!", "Error!", MB_ICONEXCLAMATION | MB_OK);
